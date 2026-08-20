@@ -22,7 +22,6 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 同时请求所有数据
     Promise.all([
       axios.get(`${API_URL}/api/dashboard/stats`).catch(() => ({ data: null })),
       axios.get(`${API_URL}/api/dashboard/trend`).catch(() => ({ data: [] })),
@@ -37,7 +36,6 @@ export default function Dashboard() {
     });
   }, []);
 
-  // 加载中
   if (loading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
@@ -46,7 +44,6 @@ export default function Dashboard() {
     );
   }
 
-  // 数据加载失败
   if (!stats) {
     return (
       <div style={{ textAlign: 'center', padding: '100px 20px' }}>
@@ -56,14 +53,8 @@ export default function Dashboard() {
     );
   }
 
-  // 安全获取数值
   const safeValue = (val) => val !== undefined && val !== null ? val : 0;
   const safeString = (val) => val?.toLocaleString() || '0';
-
-  const warningProducts = products.filter(p => p.status === '上架' && p.total_stock <= p.warning_stock);
-  const API_URL = import.meta.env.VITE_API_URL || '';
-
-axios.get(`${API_URL}/api/dashboard/stats`)
 
   const statCards = [
     { 
@@ -101,7 +92,6 @@ axios.get(`${API_URL}/api/dashboard/stats`)
 
   return (
     <div>
-      {/* 第一行：核心指标 */}
       <Row gutter={[20, 20]}>
         {statCards.map((card, index) => (
           <Col xs={24} sm={12} lg={6} key={index} style={{ display: 'flex' }}>
@@ -158,7 +148,6 @@ axios.get(`${API_URL}/api/dashboard/stats`)
         ))}
       </Row>
 
-      {/* 第二行：趋势图 + 畅销榜 */}
       <Row gutter={[20, 20]} style={{ marginTop: 20 }}>
         <Col xs={24} lg={16}>
           <Card 
