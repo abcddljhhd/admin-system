@@ -61,6 +61,9 @@ export default function Dashboard() {
   const safeString = (val) => val?.toLocaleString() || '0';
 
   const warningProducts = products.filter(p => p.status === '上架' && p.total_stock <= p.warning_stock);
+  const API_URL = import.meta.env.VITE_API_URL || '';
+
+axios.get(`${API_URL}/api/dashboard/stats`)
 
   const statCards = [
     { 
