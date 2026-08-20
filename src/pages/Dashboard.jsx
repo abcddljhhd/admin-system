@@ -28,10 +28,20 @@ export default function Dashboard() {
       axios.get(`${API_URL}/api/dashboard/top-products`).catch(() => ({ data: [] })),
       axios.get(`${API_URL}/api/products`).catch(() => ({ data: { products: [] } }))
     ]).then(([statsRes, trendRes, topRes, productsRes]) => {
-      setStats(statsRes.data);
-      setTrend(trendRes.data);
-      setTopProducts(topRes.data);
-      setProducts(productsRes.data.products || []);
+      // 防御性处理：确保数据类型正确，防止 .reduce() 崩溃
+      const safeStats = statsRes.data && typeof statsRes.data === 'object' && !Array.isArray(statsRes.data)
+        ? statsRes.data
+        : null;
+      const safeTrend = Array.isArray(trendRes.data) ? trendRes.data : [];
+      const safeTop = Array.isArray(topRes.data) ? topRes.data : [];
+      const safeProducts = productsRes.data && typeof productsRes.data === 'object' && Array.isArray(productsRes.data.products)
+        ? productsRes.data.products
+        : [];
+
+      setStats(safeStats);
+      setTrend(safeTrend);
+      setTopProducts(safeTop);
+      setProducts(safeProducts);
       setLoading(false);
     });
   }, []);
@@ -89,6 +99,9 @@ export default function Dashboard() {
       sub: `上周 ¥${safeString(stats.lastWeekAvg)}`
     },
   ];
+
+  // 确保传给 recharts 的数据一定是数组
+  const chartData = Array.isArray(trend) ? trend : [];
 
   return (
     <div>
@@ -173,7 +186,7 @@ export default function Dashboard() {
           >
             <ResponsiveContainer width="100%" height={300}>
               {chartMode === 'revenue' ? (
-                <AreaChart data={trend}>
+                <AreaChart data={chartData}>
                   <defs>
                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#667eea" stopOpacity={0.15}/>
@@ -190,7 +203,7 @@ export default function Dashboard() {
                   <Area type="monotone" dataKey="revenue" stroke="#667eea" strokeWidth={2} fillOpacity={1} fill="url(#colorRevenue)" />
                 </AreaChart>
               ) : (
-                <BarChart data={trend}>
+                <BarChart data={chartData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#f8fafc" vertical={false} />
                   <XAxis dataKey="name" stroke="#cbd5e1" fontSize={12} tickLine={false} axisLine={false} />
                   <YAxis stroke="#cbd5e1" fontSize={12} tickLine={false} axisLine={false} />
